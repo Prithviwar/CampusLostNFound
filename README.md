@@ -8,8 +8,8 @@ A full-stack Next.js application for managing campus lost-and-found items. It us
 
 | Member | Responsibilities |
 |--------|-----------------|
-| Member 1 | MySQL schema, constraints, views, triggers, stored procedures, authentication, admin APIs |
-| Member 2 | MongoDB schema, aggregation pipelines, matching algorithm, student interface, search & filtering |
+| Prithvi | MySQL schema, constraints, views, triggers, stored procedures, authentication, admin APIs |
+| Ramneek | MongoDB schema, aggregation pipelines, matching algorithm, student interface, search & filtering |
 
 ---
 
@@ -17,7 +17,7 @@ A full-stack Next.js application for managing campus lost-and-found items. It us
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend & Backend | Next.js 15 (App Router, TypeScript) |
+| Frontend & Backend | Next.js 16.4.3 (App Router, TypeScript) |
 | RDBMS | MySQL 8.x |
 | NoSQL | MongoDB 7.x |
 | Auth | bcryptjs + JWT (httpOnly cookie) |
@@ -166,13 +166,13 @@ Matches with score ≥ 50 are saved to MySQL `Matches` table and displayed with 
 
 ### Step 1 — Configure environment variables
 
-Edit [`campus-lnf/.env.local`](campus-lnf/.env.local) and set your actual MySQL password:
+Create `campus-lnf/.env.local` and set your local database credentials. Do not commit this file:
 
 ```env
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=root
-MYSQL_PASSWORD=YOUR_MYSQL_PASSWORD_HERE   # <-- change this
+MYSQL_PASSWORD=YOUR_MYSQL_PASSWORD_HERE
 MYSQL_DATABASE=campus_lnf
 
 MONGODB_URI=mongodb://localhost:27017
@@ -197,17 +197,19 @@ cd ..
 
 **Option A — One-shot script (recommended)**
 
-Run this from the project root (`Mini_Project/`). Replace `YourPassword` with your MySQL root password:
+Run this from the project root (`Mini_Project/`). The script reads `MYSQL_USER` and `MYSQL_PASSWORD` from `campus-lnf/.env.local` automatically:
 
 ```powershell
-.\setup.ps1 -Password "YourPassword"
+\.\setup.ps1
 ```
 
 If your MySQL executable is not at the default path, pass it explicitly:
 
 ```powershell
-.\setup.ps1 -MySQLExe "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -Password "YourPassword"
+\.\setup.ps1 -MySQLExe "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 ```
+
+The setup script recreates the development database, creates the schema and advanced SQL objects, inserts seed data, and seeds MongoDB. It stops immediately if a database command fails.
 
 **Option B — Run each command manually** (PowerShell from project root):
 
@@ -215,13 +217,13 @@ If your MySQL executable is not at the default path, pass it explicitly:
 $mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 
 # MySQL — create schema (tables, constraints, indexes)
-Get-Content "database\mysql\01_schema.sql" | & $mysql -u root -pYourPassword
+Get-Content "database\mysql\01_schema.sql" | & $mysql -u root --password=YourPassword
 
 # MySQL — create views, stored procedures, trigger
-Get-Content "database\mysql\02_views_procedures_triggers.sql" | & $mysql -u root -pYourPassword
+Get-Content "database\mysql\02_views_procedures_triggers.sql" | & $mysql -u root --password=YourPassword
 
 # MySQL — insert sample data
-Get-Content "database\mysql\03_seed_data.sql" | & $mysql -u root -pYourPassword
+Get-Content "database\mysql\03_seed_data.sql" | & $mysql -u root --password=YourPassword
 
 # MongoDB — seed item_details collection and create indexes
 cd campus-lnf
@@ -243,7 +245,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### 3. Demo Accounts
+### Demo Accounts
 
 | Role | Email | Password |
 |------|-------|---------|
@@ -257,16 +259,18 @@ Open [http://localhost:3000](http://localhost:3000)
 
 1. Open the app and explain the problem and novelty
 2. Show the ER diagram (6 MySQL tables) and MongoDB document model
-3. Log in as **admin@campus.edu** → view the Admin Dashboard → Reports tab
-4. Show SQL reports: category breakdown, location hotspots, recovery rates
-5. Show MongoDB aggregations: item types, top keywords, color distribution
-6. Log in as **priya@campus.edu** → submit a LOST report for a bag
-7. Log in as **rohan@campus.edu** → submit a FOUND report for a similar bag
-8. Show the match score (≥50%) and the reasons panel on the item detail page
-9. Submit a claim from priya's account
-10. Log in as admin → Claims tab → Approve the claim (triggers the stored procedure and transaction)
-11. Show the status-history trail on the item detail page (trigger auto-inserted a record)
-12. Show the GitHub repository and team commits
+3. Show the relational schema and data dictionary in `docs/RELATIONAL_SCHEMA_AND_DATA_DICTIONARY.md`
+4. Log in as **admin@campus.edu** → view the Admin Dashboard → Reports tab
+5. Show SQL reports: category breakdown, location hotspots, recovery rates
+6. Show MongoDB aggregations: item types, top keywords, color distribution
+7. Log in as **priya@campus.edu** → submit a LOST report for a bag
+8. Log in as **rohan@campus.edu** → submit a FOUND report for a similar bag
+9. Show the match score (≥50%) and the reasons panel on the item detail page
+10. Submit a claim from Priya's account and show it under My Claims
+11. Log in as admin → Admin Dashboard → Claims tab → approve the claim
+12. Show the status-history trail on the item detail page
+13. Show the testing results and application screenshots
+14. Show the GitHub repository and team commits
 
 ---
 
@@ -308,6 +312,17 @@ database/
 └── mongodb/
     └── seed.js                 # Item details + index creation + aggregation demo
 ```
+
+## Project Documentation
+
+The review documentation is stored in the `docs/` folder:
+
+- [ER diagram](docs/Campus%20Lost%20and%20Found%20-%20ER%20Diagram.png)
+- [Relational schema and data dictionary](docs/RELATIONAL_SCHEMA_AND_DATA_DICTIONARY.md)
+- [Testing results](docs/TESTING_RESULTS.md)
+- [Project implementation plan](docs/IMPLEMENTATION_PLAN.md)
+
+The navbar's **My Claims** page shows claims submitted by the current user. The Admin Dashboard's **Claims** tab shows all claims and provides approval/rejection actions.
 
 ---
 
